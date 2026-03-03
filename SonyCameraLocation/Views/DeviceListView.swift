@@ -63,18 +63,18 @@ struct SignalStrengthView: View {
 
     private var bars: Int {
         switch rssi {
-        case -50...: return 4
-        case -65...: return 3
-        case -75...: return 2
+        case (-50)...: return 4
+        case (-65)...: return 3
+        case (-75)...: return 2
         default: return 1
         }
     }
 
     private var color: Color {
         switch rssi {
-        case -50...: return .green
-        case -65...: return .yellow
-        case -75...: return .orange
+        case (-50)...: return .green
+        case (-65)...: return .yellow
+        case (-75)...: return .orange
         default: return .red
         }
     }
