@@ -5,6 +5,7 @@
 //  Created by 許博鈞 on 2026/3/3.
 //
 
+import SwiftData
 import SwiftUI
 
 @main
@@ -17,5 +18,6 @@ struct SonyCameraLocationApp: App {
                 .environment(appModel)
                 .preferredColorScheme(.light)
         }
+        .modelContainer(for: ConnectionRecord.self)
     }
 }

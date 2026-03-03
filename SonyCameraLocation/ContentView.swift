@@ -4,13 +4,22 @@
 //
 
 import CoreLocation
+import MapKit
+import SwiftData
 import SwiftUI
 
 struct ContentView: View {
     @Environment(AppModel.self) private var appModel
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: \ConnectionRecord.connectedAt, order: .reverse)
+    private var allRecords: [ConnectionRecord]
 
     private var ble: BLEManager { appModel.bleManager }
     private var loc: LocationManager { appModel.locationManager }
+
+    private var recentRecords: [ConnectionRecord] {
+        Array(allRecords.prefix(10))
+    }
 
     var body: some View {
         NavigationStack {
@@ -39,10 +48,62 @@ struct ContentView: View {
                         transmitSection
                     }
                 }
+
+                // MARK: 連線紀錄
+                Section("連線紀錄") {
+                    if recentRecords.isEmpty {
+                        Label("尚無連線紀錄", systemImage: "clock")
+                            .foregroundStyle(.secondary)
+                    } else {
+                        ConnectionMapView(records: recentRecords)
+                            .listRowInsets(EdgeInsets())
+
+                        ForEach(recentRecords) { record in
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(record.deviceName)
+                                    .font(.headline)
+                                HStack {
+                                    Image(systemName: "location.fill")
+                                        .foregroundStyle(.blue)
+                                    Text(String(format: "%.4f, %.4f", record.latitude, record.longitude))
+                                        .monospacedDigit()
+                                }
+                                .font(.caption)
+                                HStack {
+                                    Image(systemName: "clock")
+                                        .foregroundStyle(.secondary)
+                                    Text(record.connectedAt, style: .relative)
+                                        + Text(" 前")
+                                }
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            }
+                            .padding(.vertical, 2)
+                        }
+                    }
+                }
             }
             .navigationTitle("Sony GPS 傳輸")
             .navigationBarTitleDisplayMode(.large)
+            .onChange(of: ble.isConnected) { oldValue, newValue in
+                if !oldValue && newValue {
+                    saveConnectionRecord()
+                }
+            }
         }
+    }
+
+    // MARK: - Save Connection Record
+
+    private func saveConnectionRecord() {
+        guard let location = loc.currentLocation else { return }
+        let name = ble.connectedDeviceName ?? "未知裝置"
+        let record = ConnectionRecord(
+            deviceName: name,
+            latitude: location.coordinate.latitude,
+            longitude: location.coordinate.longitude
+        )
+        modelContext.insert(record)
     }
 
     // MARK: - Location Section
@@ -136,5 +197,6 @@ struct ContentView: View {
 #Preview {
     ContentView()
         .environment(AppModel())
+        .modelContainer(for: ConnectionRecord.self, inMemory: true)
         .preferredColorScheme(.light)
 }

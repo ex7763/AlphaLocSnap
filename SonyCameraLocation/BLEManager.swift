@@ -52,6 +52,7 @@ final class BLEManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate
     var packetsSent = 0
     var packetsError = 0
     var lastError: String?
+    var connectedDeviceName: String?
 
     var locationProvider: (() -> CLLocation?)?
 
@@ -81,6 +82,7 @@ final class BLEManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate
     func connect(to device: DiscoveredDevice) {
         stopScanning()
         bleState = .connecting
+        connectedDeviceName = device.name
         centralManager.connect(device.peripheral, options: nil)
         connectedPeripheral = device.peripheral
         device.peripheral.delegate = self
@@ -123,6 +125,7 @@ final class BLEManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate
         connectedPeripheral = nil
         connectionTestChar = nil
         gpsWriteChar = nil
+        connectedDeviceName = nil
         isConnected = false
         isCameraOn = false
         isTransmitting = false
