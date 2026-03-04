@@ -1,0 +1,42 @@
+{
+  "name": "AlphaLocSnap",
+  "subtitle": "Sony Alpha camera GPS tagging app",
+  "description": "A Sony Alpha camera GPS tagging app that connects via Bluetooth to add location data to your photos.\n\nDesigned to replace the unstable Creator's App with a more reliable solution.",
+  "iconURL": "https://raw.githubusercontent.com/ex7763/AlphaLocSnap/main/AlphaLocSnap/Assets.xcassets/AppIcon.appiconset/AppIcon.png",
+  "website": "https://github.com/ex7763/AlphaLocSnap",
+  "tintColor": "#007AFF",
+  "featuredApps": [
+    "com.hsupc.AlphaLocSnap"
+  ],
+  "apps": [
+    {
+      "name": "AlphaLocSnap",
+      "bundleIdentifier": "com.hsupc.AlphaLocSnap",
+      "developerName": "HSUPC",
+      "subtitle": "Sony Alpha camera GPS tagging app",
+      "localizedDescription": "A Sony Alpha camera GPS tagging app that connects via Bluetooth to add location data to your photos.\n\nDesigned to replace the unstable Creator's App with a more reliable solution.",
+      "iconURL": "https://raw.githubusercontent.com/ex7763/AlphaLocSnap/main/AlphaLocSnap/Assets.xcassets/AppIcon.appiconset/AppIcon.png",
+      "tintColor": "#007AFF",
+      "category": "utilities",
+      "appPermissions": {
+        "entitlements": [],
+        "privacy": {
+          "NSLocationWhenInUseUsageDescription": "Access your location to tag photos taken with Sony Alpha cameras",
+          "NSLocationAlwaysAndWhenInUseUsageDescription": "Access your location to tag photos taken with Sony Alpha cameras",
+          "NSBluetoothAlwaysUsageDescription": "Connect to Sony Alpha cameras via Bluetooth to receive GPS data",
+          "NSBluetoothPeripheralUsageDescription": "Connect to Sony Alpha cameras via Bluetooth to receive GPS data"
+        }
+      },
+      "versions": [
+        {
+          "version": "1.0.0",
+          "buildVersion": "1",
+          "date": "2026-03-05T00:00:00Z",
+          "localizedDescription": "Initial release\n\n- Connect to Sony Alpha cameras via Bluetooth\n- Automatic GPS tagging for photos\n- Support for multiple Sony camera models",
+          "downloadURL": "https://github.com/ex7763/AlphaLocSnap/releases/download/v1.0/AlphaLocSnap.ipa",
+          "size": 5000000
+        }
+      ]
+    }
+  ]
+}
