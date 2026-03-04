@@ -7,6 +7,7 @@
 
 import CoreLocation
 import Observation
+import SwiftUI
 
 // MARK: - GPS 更新模式
 
@@ -18,10 +19,10 @@ enum GPSUpdateMode: Int, CaseIterable {
 
     var label: String {
         switch self {
-        case .highFrequency: "高頻（2 秒）"
-        case .standard: "標準（5 秒）"
-        case .powerSaving: "省電（15 秒）"
-        case .custom: "自訂"
+        case .highFrequency: Strings.tr("gpsModeHighFreq")
+        case .standard: Strings.tr("gpsModeStandard")
+        case .powerSaving: Strings.tr("gpsModePowerSaving")
+        case .custom: Strings.tr("gpsModeCustom")
         }
     }
 
@@ -54,11 +55,11 @@ enum AccuracyOption: Int, CaseIterable {
 
     var label: String {
         switch self {
-        case .best: "最佳"
-        case .tenMeters: "10 公尺"
-        case .hundredMeters: "100 公尺"
-        case .kilometer: "1 公里"
-        case .threeKilometers: "3 公里"
+        case .best: Strings.tr("accuracyBest")
+        case .tenMeters: Strings.tr("accuracy10m")
+        case .hundredMeters: Strings.tr("accuracy100m")
+        case .kilometer: Strings.tr("accuracy1km")
+        case .threeKilometers: Strings.tr("accuracy3km")
         }
     }
 

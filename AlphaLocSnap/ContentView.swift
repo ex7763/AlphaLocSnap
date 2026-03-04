@@ -18,8 +18,8 @@ struct ContentView: View {
     @AppStorage("notifyOnDisconnect") private var notifyOnDisconnect = true
     @AppStorage("gpsUpdateInterval") private var gpsUpdateInterval = GPSUpdateMode.standard.rawValue
     @AppStorage("customAccuracy") private var customAccuracy = AccuracyOption.best.rawValue
-    @AppStorage("customDistanceFilter") private var customDistanceFilter: Double = 0.0
-    @AppStorage("customInterval") private var customInterval: Int = 5
+    @AppStorage("customDistanceFilter") private var customDistanceFilter: Double = 15.0
+    @AppStorage("customInterval") private var customInterval: Int = 30
 
     @State private var showLanguagePicker = false
 
@@ -76,21 +76,29 @@ struct ContentView: View {
                             appModel.applyCustomGPSSettings()
                         }
 
-                        Stepper(
-                            "\(Strings.tr("distanceFilter")): \(customDistanceFilter == 0 ? Strings.tr("noFilter") : String(format: "%.0f m", customDistanceFilter))",
-                            value: $customDistanceFilter,
-                            in: 0...100,
-                            step: 5
-                        )
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("\(Strings.tr("distanceFilter")): \(Int(customDistanceFilter)) m")
+                            Slider(
+                                value: $customDistanceFilter,
+                                in: 5...100,
+                                step: 5
+                            )
+                        }
                         .onChange(of: customDistanceFilter) { _, _ in
                             appModel.applyCustomGPSSettings()
                         }
 
-                        Stepper(
-                            "\(Strings.tr("updateInterval")): \(customInterval) \(Strings.tr("seconds"))",
-                            value: $customInterval,
-                            in: 1...60
-                        )
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("\(Strings.tr("updateInterval")): \(customInterval) \(Strings.tr("seconds"))")
+                            Slider(
+                                value: Binding(
+                                    get: { Double(customInterval) },
+                                    set: { customInterval = Int($0) }
+                                ),
+                                in: 1...120,
+                                step: 1
+                            )
+                        }
                     }
 
                     Toggle(Strings.tr("connectionNotification"), isOn: $notifyOnConnect)

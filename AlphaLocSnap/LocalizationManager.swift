@@ -82,7 +82,16 @@ struct Strings {
 
         // GPS Settings
         "gpsUpdateMode": "GPS 更新模式",
+        "gpsModeHighFreq": "高頻（2 秒）",
+        "gpsModeStandard": "標準（5 秒）",
+        "gpsModePowerSaving": "省電（15 秒）",
+        "gpsModeCustom": "自訂",
         "locationAccuracy": "定位精度",
+        "accuracyBest": "最佳",
+        "accuracy10m": "10 公尺",
+        "accuracy100m": "100 公尺",
+        "accuracy1km": "1 公里",
+        "accuracy3km": "3 公里",
         "distanceFilter": "距離過濾",
         "updateInterval": "更新間隔",
         "noFilter": "無",
@@ -178,7 +187,16 @@ struct Strings {
 
         // GPS Settings
         "gpsUpdateMode": "GPS Update Mode",
+        "gpsModeHighFreq": "High Frequency (2 sec)",
+        "gpsModeStandard": "Standard (5 sec)",
+        "gpsModePowerSaving": "Power Saving (15 sec)",
+        "gpsModeCustom": "Custom",
         "locationAccuracy": "Location Accuracy",
+        "accuracyBest": "Best",
+        "accuracy10m": "10 Meters",
+        "accuracy100m": "100 Meters",
+        "accuracy1km": "1 Kilometer",
+        "accuracy3km": "3 Kilometers",
         "distanceFilter": "Distance Filter",
         "updateInterval": "Update Interval",
         "noFilter": "None",

@@ -31,9 +31,9 @@ final class AppModel: NSObject, UNUserNotificationCenterDelegate {
     @ObservationIgnored
     @AppStorage("customAccuracy") var customAccuracy = AccuracyOption.best.rawValue
     @ObservationIgnored
-    @AppStorage("customDistanceFilter") var customDistanceFilter: Double = 0.0
+    @AppStorage("customDistanceFilter") var customDistanceFilter: Double = 15.0
     @ObservationIgnored
-    @AppStorage("customInterval") var customInterval: Int = 5
+    @AppStorage("customInterval") var customInterval: Int = 30
 
     /// 上次實際送出 GPS 封包的時間（throttle 用）
     @ObservationIgnored
