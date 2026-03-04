@@ -14,12 +14,14 @@ enum GPSUpdateMode: Int, CaseIterable {
     case highFrequency = 2   // 2 秒
     case standard = 5        // 5 秒
     case powerSaving = 15    // 15 秒
+    case custom = 0          // 使用者自訂
 
     var label: String {
         switch self {
         case .highFrequency: "高頻（2 秒）"
         case .standard: "標準（5 秒）"
         case .powerSaving: "省電（15 秒）"
+        case .custom: "自訂"
         }
     }
 
@@ -28,6 +30,7 @@ enum GPSUpdateMode: Int, CaseIterable {
         case .highFrequency: kCLLocationAccuracyBest
         case .standard: kCLLocationAccuracyNearestTenMeters
         case .powerSaving: kCLLocationAccuracyHundredMeters
+        case .custom: kCLLocationAccuracyBest // 預設值，實際由使用者設定覆蓋
         }
     }
 
@@ -36,6 +39,36 @@ enum GPSUpdateMode: Int, CaseIterable {
         case .highFrequency: kCLDistanceFilterNone
         case .standard: 5.0
         case .powerSaving: 15.0
+        case .custom: kCLDistanceFilterNone // 預設值，實際由使用者設定覆蓋
+        }
+    }
+}
+
+/// desiredAccuracy 的使用者可選選項
+enum AccuracyOption: Int, CaseIterable {
+    case best = 0
+    case tenMeters = 1
+    case hundredMeters = 2
+    case kilometer = 3
+    case threeKilometers = 4
+
+    var label: String {
+        switch self {
+        case .best: "最佳"
+        case .tenMeters: "10 公尺"
+        case .hundredMeters: "100 公尺"
+        case .kilometer: "1 公里"
+        case .threeKilometers: "3 公里"
+        }
+    }
+
+    var clAccuracy: CLLocationAccuracy {
+        switch self {
+        case .best: kCLLocationAccuracyBest
+        case .tenMeters: kCLLocationAccuracyNearestTenMeters
+        case .hundredMeters: kCLLocationAccuracyHundredMeters
+        case .kilometer: kCLLocationAccuracyKilometer
+        case .threeKilometers: kCLLocationAccuracyThreeKilometers
         }
     }
 }
@@ -67,6 +100,13 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
         clManager.pausesLocationUpdatesAutomatically = (mode == .powerSaving)
     }
 
+    /// 自訂模式：直接設定精度與距離過濾
+    func applyCustom(accuracy: CLLocationAccuracy, distanceFilter: CLLocationDistance) {
+        clManager.desiredAccuracy = accuracy
+        clManager.distanceFilter = distanceFilter
+        clManager.pausesLocationUpdatesAutomatically = false
+    }
+
     func requestPermission() {
         clManager.requestAlwaysAuthorization()
     }
@@ -82,7 +122,7 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
     private func configureBackgroundUpdates() {
         clManager.allowsBackgroundLocationUpdates = true
         clManager.pausesLocationUpdatesAutomatically = false
-        clManager.showsBackgroundLocationIndicator = true
+        clManager.showsBackgroundLocationIndicator = false
     }
 
     // MARK: - CLLocationManagerDelegate

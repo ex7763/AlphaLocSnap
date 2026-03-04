@@ -27,6 +27,14 @@ final class AppModel: NSObject, UNUserNotificationCenterDelegate {
     @ObservationIgnored
     @AppStorage("gpsUpdateInterval") var gpsUpdateInterval = GPSUpdateMode.standard.rawValue
 
+    /// 自訂模式參數
+    @ObservationIgnored
+    @AppStorage("customAccuracy") var customAccuracy = AccuracyOption.best.rawValue
+    @ObservationIgnored
+    @AppStorage("customDistanceFilter") var customDistanceFilter: Double = 0.0
+    @ObservationIgnored
+    @AppStorage("customInterval") var customInterval: Int = 5
+
     /// 上次實際送出 GPS 封包的時間（throttle 用）
     @ObservationIgnored
     private var lastSentDate: Date = .distantPast
@@ -40,7 +48,12 @@ final class AppModel: NSObject, UNUserNotificationCenterDelegate {
 
         // 套用儲存的 GPS 模式
         if let mode = GPSUpdateMode(rawValue: gpsUpdateInterval) {
-            locationManager.applyMode(mode)
+            if mode == .custom {
+                let accuracy = AccuracyOption(rawValue: customAccuracy)?.clAccuracy ?? kCLLocationAccuracyBest
+                locationManager.applyCustom(accuracy: accuracy, distanceFilter: customDistanceFilter)
+            } else {
+                locationManager.applyMode(mode)
+            }
         }
 
         // 設定通知代理，讓前景也能顯示通知
@@ -63,7 +76,10 @@ final class AppModel: NSObject, UNUserNotificationCenterDelegate {
         // 位置更新回調：驅動 GPS 傳送（含 throttle）
         locationManager.onLocationUpdate = { [weak self] location in
             guard let self, self.bleManager.isTransmitting else { return }
-            let interval = TimeInterval(self.gpsUpdateInterval)
+            let seconds = self.gpsUpdateInterval == GPSUpdateMode.custom.rawValue
+                ? self.customInterval
+                : self.gpsUpdateInterval
+            let interval = TimeInterval(seconds)
             guard Date().timeIntervalSince(self.lastSentDate) >= interval else { return }
             self.lastSentDate = Date()
             self.bleManager.sendGPSPacket()
@@ -80,8 +96,18 @@ final class AppModel: NSObject, UNUserNotificationCenterDelegate {
     /// 切換 GPS 模式時呼叫
     func applyGPSMode(_ mode: GPSUpdateMode) {
         gpsUpdateInterval = mode.rawValue
-        locationManager.applyMode(mode)
+        if mode == .custom {
+            applyCustomGPSSettings()
+        } else {
+            locationManager.applyMode(mode)
+        }
         logStore.log(.gps, "GPS 模式切換為：\(mode.label)")
+    }
+
+    /// 套用自訂 GPS 參數
+    func applyCustomGPSSettings() {
+        let accuracy = AccuracyOption(rawValue: customAccuracy)?.clAccuracy ?? kCLLocationAccuracyBest
+        locationManager.applyCustom(accuracy: accuracy, distanceFilter: customDistanceFilter)
     }
 
     // MARK: - UNUserNotificationCenterDelegate

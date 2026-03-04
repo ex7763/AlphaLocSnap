@@ -17,6 +17,9 @@ struct ContentView: View {
     @AppStorage("notifyOnConnect") private var notifyOnConnect = true
     @AppStorage("notifyOnDisconnect") private var notifyOnDisconnect = true
     @AppStorage("gpsUpdateInterval") private var gpsUpdateInterval = GPSUpdateMode.standard.rawValue
+    @AppStorage("customAccuracy") private var customAccuracy = AccuracyOption.best.rawValue
+    @AppStorage("customDistanceFilter") private var customDistanceFilter: Double = 0.0
+    @AppStorage("customInterval") private var customInterval: Int = 5
 
     private var ble: BLEManager { appModel.bleManager }
     private var loc: LocationManager { appModel.locationManager }
@@ -65,6 +68,35 @@ struct ContentView: View {
                             appModel.applyGPSMode(mode)
                         }
                     }
+
+                    // 自訂模式詳細設定
+                    if gpsUpdateInterval == GPSUpdateMode.custom.rawValue {
+                        Picker("定位精度", selection: $customAccuracy) {
+                            ForEach(AccuracyOption.allCases, id: \.rawValue) { option in
+                                Text(option.label).tag(option.rawValue)
+                            }
+                        }
+                        .onChange(of: customAccuracy) { _, _ in
+                            appModel.applyCustomGPSSettings()
+                        }
+
+                        Stepper(
+                            "距離過濾：\(customDistanceFilter == 0 ? "無" : String(format: "%.0f m", customDistanceFilter))",
+                            value: $customDistanceFilter,
+                            in: 0...100,
+                            step: 5
+                        )
+                        .onChange(of: customDistanceFilter) { _, _ in
+                            appModel.applyCustomGPSSettings()
+                        }
+
+                        Stepper(
+                            "更新間隔：\(customInterval) 秒",
+                            value: $customInterval,
+                            in: 1...60
+                        )
+                    }
+
                     Toggle("連線通知", isOn: $notifyOnConnect)
                     Toggle("斷線通知", isOn: $notifyOnDisconnect)
                     Toggle("自動重連", isOn: Bindable(ble).autoConnectEnabled)
