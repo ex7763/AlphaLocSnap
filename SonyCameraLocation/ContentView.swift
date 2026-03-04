@@ -14,6 +14,9 @@ struct ContentView: View {
     @Query(sort: \ConnectionRecord.connectedAt, order: .reverse)
     private var allRecords: [ConnectionRecord]
 
+    @AppStorage("notifyOnConnect") private var notifyOnConnect = true
+    @AppStorage("notifyOnDisconnect") private var notifyOnDisconnect = true
+
     private var ble: BLEManager { appModel.bleManager }
     private var loc: LocationManager { appModel.locationManager }
 
@@ -46,6 +49,23 @@ struct ContentView: View {
                 if ble.isConnected {
                     Section("傳輸") {
                         transmitSection
+                    }
+                }
+
+                // MARK: 設定
+                Section("設定") {
+                    Toggle("連線通知", isOn: $notifyOnConnect)
+                    Toggle("斷線通知", isOn: $notifyOnDisconnect)
+                    Toggle("自動重連", isOn: Bindable(ble).autoConnectEnabled)
+                    NavigationLink {
+                        LogView()
+                    } label: {
+                        HStack {
+                            Label("日誌", systemImage: "doc.text")
+                            Spacer()
+                            Text("\(appModel.logStore.entries.count)")
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
 
@@ -85,25 +105,10 @@ struct ContentView: View {
             }
             .navigationTitle("Sony GPS 傳輸")
             .navigationBarTitleDisplayMode(.large)
-            .onChange(of: ble.isConnected) { oldValue, newValue in
-                if !oldValue && newValue {
-                    saveConnectionRecord()
-                }
+            .onAppear {
+                appModel.modelContext = modelContext
             }
         }
-    }
-
-    // MARK: - Save Connection Record
-
-    private func saveConnectionRecord() {
-        guard let location = loc.currentLocation else { return }
-        let name = ble.connectedDeviceName ?? "未知裝置"
-        let record = ConnectionRecord(
-            deviceName: name,
-            latitude: location.coordinate.latitude,
-            longitude: location.coordinate.longitude
-        )
-        modelContext.insert(record)
     }
 
     // MARK: - Location Section

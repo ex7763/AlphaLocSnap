@@ -3,7 +3,7 @@
 //  SonyCameraLocation
 //
 //  CoreLocation 封裝，使用 @Observable
-//
+//  支援背景定位
 
 import CoreLocation
 import Observation
@@ -15,6 +15,10 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
     var currentLocation: CLLocation?
     var authorizationStatus: CLAuthorizationStatus = .notDetermined
 
+    /// 位置更新回調，供 AppModel 在背景中驅動 GPS 傳送
+    @ObservationIgnored
+    var onLocationUpdate: ((CLLocation) -> Void)?
+
     override init() {
         super.init()
         clManager.delegate = self
@@ -23,7 +27,7 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
     }
 
     func requestPermission() {
-        clManager.requestWhenInUseAuthorization()
+        clManager.requestAlwaysAuthorization()
     }
 
     func startUpdating() {
@@ -34,10 +38,18 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
         clManager.stopUpdatingLocation()
     }
 
+    private func configureBackgroundUpdates() {
+        clManager.allowsBackgroundLocationUpdates = true
+        clManager.pausesLocationUpdatesAutomatically = false
+        clManager.showsBackgroundLocationIndicator = false
+    }
+
     // MARK: - CLLocationManagerDelegate
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        currentLocation = locations.last
+        guard let location = locations.last else { return }
+        currentLocation = location
+        onLocationUpdate?(location)
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
@@ -48,6 +60,9 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
         authorizationStatus = manager.authorizationStatus
         if manager.authorizationStatus == .authorizedWhenInUse ||
            manager.authorizationStatus == .authorizedAlways {
+            if manager.authorizationStatus == .authorizedAlways {
+                configureBackgroundUpdates()
+            }
             clManager.startUpdatingLocation()
         }
     }

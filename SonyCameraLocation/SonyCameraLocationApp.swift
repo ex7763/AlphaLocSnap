@@ -17,6 +17,9 @@ struct SonyCameraLocationApp: App {
             ContentView()
                 .environment(appModel)
                 .preferredColorScheme(.light)
+                .onAppear {
+                    appModel.requestNotificationPermission()
+                }
         }
         .modelContainer(for: ConnectionRecord.self)
     }
