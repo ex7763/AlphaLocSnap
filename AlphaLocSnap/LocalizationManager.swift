@@ -157,6 +157,7 @@ struct Strings {
         // App Title
         "appTitle": "Sony GPS 傳輸",
         "language": "語言",
+        "cancel": "取消",
 
         // Restart Alert
         "restartRequired": "需要重新啟動",
@@ -268,6 +269,7 @@ struct Strings {
         // App Title
         "appTitle": "Sony GPS Transfer",
         "language": "Language",
+        "cancel": "Cancel",
 
         // Restart Alert
         "restartRequired": "Restart Required",

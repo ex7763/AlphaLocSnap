@@ -265,12 +265,18 @@ struct LanguagePickerView: View {
             List {
                 ForEach(AppLanguage.allCases) { language in
                     Button {
-                        selectedLanguage = language
+                        if language != LocalizationManager.shared.language {
+                            selectedLanguage = language
+                            LocalizationManager.shared.language = language
+                            showRestartAlert = true
+                        } else {
+                            dismiss()
+                        }
                     } label: {
                         HStack {
                             Text(language.displayName)
                             Spacer()
-                            if selectedLanguage == language {
+                            if language == LocalizationManager.shared.language {
                                 Image(systemName: "checkmark")
                                     .foregroundStyle(.blue)
                             }
@@ -281,19 +287,11 @@ struct LanguagePickerView: View {
             .navigationTitle(Strings.tr("language"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") {
-                        if selectedLanguage != LocalizationManager.shared.language {
-                            LocalizationManager.shared.language = selectedLanguage
-                            showRestartAlert = true
-                        } else {
-                            dismiss()
-                        }
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(Strings.tr("cancel")) {
+                        dismiss()
                     }
                 }
-            }
-            .onAppear {
-                selectedLanguage = LocalizationManager.shared.language
             }
             .alert(Strings.tr("restartRequired"), isPresented: $showRestartAlert) {
                 Button(Strings.tr("restartNow")) {
