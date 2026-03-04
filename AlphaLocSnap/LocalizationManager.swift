@@ -26,20 +26,32 @@ enum AppLanguage: String, CaseIterable, Identifiable {
 final class LocalizationManager {
     static let shared = LocalizationManager()
 
-    @AppStorage("appLanguage") var language: AppLanguage = .traditionalChinese
+    var language: AppLanguage {
+        get {
+            AppLanguage(rawValue: UserDefaults.standard.string(forKey: "appLanguage") ?? "") ?? .traditionalChinese
+        }
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: "appLanguage")
+        }
+    }
 
     private init() {}
 }
 
 struct Strings {
-    static func tr(_ key: String) -> String {
+    static func tr(_ key: String, _ args: CVarArg...) -> String {
         let lang = LocalizationManager.shared.language
+        var value: String
         switch lang {
         case .traditionalChinese:
-            return zhHant[key] ?? key
+            value = zhHant[key] ?? key
         case .english:
-            return en[key] ?? key
+            value = en[key] ?? key
         }
+        if args.isEmpty {
+            return value
+        }
+        return String(format: value, arguments: args)
     }
 
     static let zhHant: [String: String] = [
