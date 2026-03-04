@@ -336,7 +336,7 @@ final class BLEManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate
     func centralManager(_ central: CBCentralManager,
                         didFailToConnect peripheral: CBPeripheral,
                         error: Error?) {
-        lastError = "連線失敗：\(error?.localizedDescription ?? "未知錯誤")"
+        lastError = Strings.tr("connectionFailed", error?.localizedDescription ?? Strings.tr("unknown"))
         resetConnectionState()
     }
 
@@ -354,7 +354,7 @@ final class BLEManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate
         }
 
         if error != nil {
-            lastError = "連線中斷"
+            lastError = Strings.tr("connectionLost")
         }
 
         // 自動重連
@@ -438,7 +438,7 @@ final class BLEManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate
         switch (setupPhase, characteristic.uuid) {
         case (.unlockingGPS, GATTConstants.unlockGPSUUID):
             if let error {
-                lastError = "GPS Unlock 失敗：\(error.localizedDescription)"
+                lastError = Strings.tr("gpsUnlockFailed", error.localizedDescription)
             } else {
                 beginLockGPS(peripheral)
             }
@@ -446,7 +446,7 @@ final class BLEManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate
 
         case (.lockingGPS, GATTConstants.lockGPSUUID):
             if let error {
-                lastError = "GPS Lock 失敗：\(error.localizedDescription)"
+                lastError = Strings.tr("gpsLockFailed", error.localizedDescription)
             } else {
                 beginTimeSync(peripheral)
             }
@@ -467,7 +467,7 @@ final class BLEManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate
         if characteristic.uuid == GATTConstants.gpsWriteUUID {
             if let error {
                 packetsError += 1
-                lastError = "傳送失敗：\(error.localizedDescription)"
+                lastError = Strings.tr("transmitFailedError", error.localizedDescription)
             } else {
                 packetsSent += 1
                 lastError = nil

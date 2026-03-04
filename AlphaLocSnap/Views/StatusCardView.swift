@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import CoreBluetooth
 
 struct StatusCardView: View {
     @Environment(AppModel.self) private var appModel
@@ -34,16 +35,16 @@ struct StatusCardView: View {
     private var actionButton: some View {
         switch ble.bleState {
         case .poweredOn:
-            Button("掃描") { ble.startScanning() }
+            Button(Strings.tr("scanning")) { ble.startScanning() }
                 .buttonStyle(.borderedProminent)
         case .scanning:
-            Button("停止") { ble.stopScanning() }
+            Button(Strings.tr("stop")) { ble.stopScanning() }
                 .buttonStyle(.bordered)
         case .connected:
-            Button("斷開", role: .destructive) { ble.disconnect() }
+            Button(Strings.tr("disconnect"), role: .destructive) { ble.disconnect() }
                 .buttonStyle(.bordered)
         case .disconnected:
-            Button("重新掃描") {
+            Button(Strings.tr("rescan")) {
                 ble.startScanning()
             }
             .buttonStyle(.borderedProminent)

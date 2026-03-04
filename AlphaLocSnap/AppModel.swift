@@ -84,10 +84,8 @@ final class AppModel: NSObject, UNUserNotificationCenterDelegate {
             self.lastSentDate = Date()
             self.bleManager.sendGPSPacket()
             let coord = location.coordinate
-            self.logStore.log(.gps, String(
-                format: "傳送 %.5f, %.5f (±%.0fm)",
-                coord.latitude, coord.longitude, location.horizontalAccuracy
-            ))
+            self.logStore.log(.gps, Strings.tr("gpsTransmit",
+                coord.latitude, coord.longitude, location.horizontalAccuracy))
         }
 
         locationManager.requestPermission()
@@ -101,7 +99,7 @@ final class AppModel: NSObject, UNUserNotificationCenterDelegate {
         } else {
             locationManager.applyMode(mode)
         }
-        logStore.log(.gps, "GPS 模式切換為：\(mode.label)")
+        logStore.log(.gps, Strings.tr("gpsModeChanged", mode.label))
     }
 
     /// 套用自訂 GPS 參數
@@ -131,8 +129,8 @@ final class AppModel: NSObject, UNUserNotificationCenterDelegate {
         guard notifyOnConnect else { return }
 
         let content = UNMutableNotificationContent()
-        content.title = "Sony 相機已連線"
-        content.body = "已連接到 \(deviceName)，GPS 傳送就緒"
+        content.title = Strings.tr("cameraConnected")
+        content.body = Strings.tr("cameraConnectedBody", deviceName)
         content.sound = .default
 
         let request = UNNotificationRequest(
@@ -147,8 +145,8 @@ final class AppModel: NSObject, UNUserNotificationCenterDelegate {
         guard notifyOnDisconnect else { return }
 
         let content = UNMutableNotificationContent()
-        content.title = "Sony 相機已斷線"
-        content.body = "\(deviceName) 已中斷連線"
+        content.title = Strings.tr("cameraDisconnected")
+        content.body = Strings.tr("cameraDisconnectedBody", deviceName)
         content.sound = .default
 
         let request = UNNotificationRequest(
@@ -164,7 +162,7 @@ final class AppModel: NSObject, UNUserNotificationCenterDelegate {
     private func handleConnection(deviceName: String) {
         saveConnectionRecord(deviceName: deviceName)
         sendConnectionNotification(deviceName: deviceName)
-        logStore.log(.connection, "\(deviceName) 已連線")
+        logStore.log(.connection, Strings.tr("deviceConnected", deviceName))
         locationManager.startUpdating()
 
         // 連線時立即傳送一次位置
@@ -172,17 +170,14 @@ final class AppModel: NSObject, UNUserNotificationCenterDelegate {
             lastSentDate = Date()
             bleManager.sendGPSPacket()
             if let coord = locationManager.currentLocation?.coordinate {
-                logStore.log(.gps, String(
-                    format: "連線立即傳送 %.5f, %.5f",
-                    coord.latitude, coord.longitude
-                ))
+                logStore.log(.gps, Strings.tr("gpsImmediateTransmit", coord.latitude, coord.longitude))
             }
         }
     }
 
     private func handleDisconnection(deviceName: String) {
         sendDisconnectionNotification(deviceName: deviceName)
-        logStore.log(.connection, "\(deviceName) 已斷線")
+        logStore.log(.connection, Strings.tr("deviceDisconnected", deviceName))
         locationManager.stopUpdating()
     }
 

@@ -21,6 +21,8 @@ struct ContentView: View {
     @AppStorage("customDistanceFilter") private var customDistanceFilter: Double = 0.0
     @AppStorage("customInterval") private var customInterval: Int = 5
 
+    @State private var showLanguagePicker = false
+
     private var ble: BLEManager { appModel.bleManager }
     private var loc: LocationManager { appModel.locationManager }
 
@@ -31,34 +33,29 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             List {
-                // MARK: 藍牙狀態
-                Section("藍牙") {
+                Section(Strings.tr("bluetooth")) {
                     StatusCardView()
                 }
 
-                // MARK: 附近裝置（掃描中才顯示）
                 if ble.bleState == .scanning || !ble.discoveredDevices.isEmpty,
                    !ble.isConnected {
-                    Section("附近裝置") {
+                    Section(Strings.tr("nearbyDevices")) {
                         DeviceListView()
                     }
                 }
 
-                // MARK: GPS 位置
-                Section("GPS 位置") {
+                Section(Strings.tr("gpsLocation")) {
                     locationSection
                 }
 
-                // MARK: 傳輸（連線後才顯示）
                 if ble.isConnected {
-                    Section("傳輸") {
+                    Section(Strings.tr("transmission")) {
                         transmitSection
                     }
                 }
 
-                // MARK: 設定
-                Section("設定") {
-                    Picker("GPS 更新模式", selection: $gpsUpdateInterval) {
+                Section(Strings.tr("settings")) {
+                    Picker(Strings.tr("gpsUpdateMode"), selection: $gpsUpdateInterval) {
                         ForEach(GPSUpdateMode.allCases, id: \.rawValue) { mode in
                             Text(mode.label).tag(mode.rawValue)
                         }
@@ -69,9 +66,8 @@ struct ContentView: View {
                         }
                     }
 
-                    // 自訂模式詳細設定
                     if gpsUpdateInterval == GPSUpdateMode.custom.rawValue {
-                        Picker("定位精度", selection: $customAccuracy) {
+                        Picker(Strings.tr("locationAccuracy"), selection: $customAccuracy) {
                             ForEach(AccuracyOption.allCases, id: \.rawValue) { option in
                                 Text(option.label).tag(option.rawValue)
                             }
@@ -81,7 +77,7 @@ struct ContentView: View {
                         }
 
                         Stepper(
-                            "距離過濾：\(customDistanceFilter == 0 ? "無" : String(format: "%.0f m", customDistanceFilter))",
+                            "\(Strings.tr("distanceFilter")): \(customDistanceFilter == 0 ? Strings.tr("noFilter") : String(format: "%.0f m", customDistanceFilter))",
                             value: $customDistanceFilter,
                             in: 0...100,
                             step: 5
@@ -91,20 +87,32 @@ struct ContentView: View {
                         }
 
                         Stepper(
-                            "更新間隔：\(customInterval) 秒",
+                            "\(Strings.tr("updateInterval")): \(customInterval) \(Strings.tr("seconds"))",
                             value: $customInterval,
                             in: 1...60
                         )
                     }
 
-                    Toggle("連線通知", isOn: $notifyOnConnect)
-                    Toggle("斷線通知", isOn: $notifyOnDisconnect)
-                    Toggle("自動重連", isOn: Bindable(ble).autoConnectEnabled)
+                    Toggle(Strings.tr("connectionNotification"), isOn: $notifyOnConnect)
+                    Toggle(Strings.tr("disconnectionNotification"), isOn: $notifyOnDisconnect)
+                    Toggle(Strings.tr("autoReconnect"), isOn: Bindable(ble).autoConnectEnabled)
+
+                    Button {
+                        showLanguagePicker = true
+                    } label: {
+                        HStack {
+                            Label(Strings.tr("language"), systemImage: "globe")
+                            Spacer()
+                            Text(LocalizationManager.shared.language.displayName)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+
                     NavigationLink {
                         LogView()
                     } label: {
                         HStack {
-                            Label("日誌", systemImage: "doc.text")
+                            Label(Strings.tr("log"), systemImage: "doc.text")
                             Spacer()
                             Text("\(appModel.logStore.entries.count)")
                                 .foregroundStyle(.secondary)
@@ -112,10 +120,9 @@ struct ContentView: View {
                     }
                 }
 
-                // MARK: 連線紀錄
-                Section("連線紀錄") {
+                Section(Strings.tr("connectionHistory")) {
                     if recentRecords.isEmpty {
-                        Label("尚無連線紀錄", systemImage: "clock")
+                        Label(Strings.tr("noConnectionHistory"), systemImage: "clock")
                             .foregroundStyle(.secondary)
                     } else {
                         ConnectionMapView(records: recentRecords)
@@ -145,42 +152,43 @@ struct ContentView: View {
                     }
                 }
             }
-            .navigationTitle("Sony GPS 傳輸")
+            .navigationTitle(Strings.tr("appTitle"))
             .navigationBarTitleDisplayMode(.large)
+            .sheet(isPresented: $showLanguagePicker) {
+                LanguagePickerView()
+            }
             .onAppear {
                 appModel.modelContext = modelContext
             }
         }
     }
 
-    // MARK: - Location Section
-
     @ViewBuilder
     private var locationSection: some View {
         switch loc.authorizationStatus {
         case .notDetermined:
-            Button("授權位置權限") {
+            Button(Strings.tr("authorizeLocation")) {
                 loc.requestPermission()
             }
         case .denied, .restricted:
-            Label("位置權限被拒絕，請至設定開啟", systemImage: "location.slash")
+            Label(Strings.tr("locationDenied"), systemImage: "location.slash")
                 .foregroundStyle(.red)
         case .authorizedWhenInUse, .authorizedAlways:
             if let location = loc.currentLocation {
-                LabeledContent("緯度") {
+                LabeledContent(Strings.tr("latitude")) {
                     Text(String(format: "%.6f°", location.coordinate.latitude))
                         .monospacedDigit()
                 }
-                LabeledContent("經度") {
+                LabeledContent(Strings.tr("longitude")) {
                     Text(String(format: "%.6f°", location.coordinate.longitude))
                         .monospacedDigit()
                 }
-                LabeledContent("精確度") {
+                LabeledContent(Strings.tr("accuracy")) {
                     Text(String(format: "±%.1f m", location.horizontalAccuracy))
                         .monospacedDigit()
                 }
             } else {
-                Label("等待 GPS 訊號...", systemImage: "location.circle")
+                Label(Strings.tr("waitingForGPS"), systemImage: "location.circle")
                     .foregroundStyle(.secondary)
             }
         @unknown default:
@@ -188,13 +196,11 @@ struct ContentView: View {
         }
     }
 
-    // MARK: - Transmit Section
-
     @ViewBuilder
     private var transmitSection: some View {
-        LabeledContent("相機狀態") {
+        LabeledContent(Strings.tr("cameraStatus")) {
             Label(
-                ble.isCameraOn ? "已開機" : "未開機",
+                ble.isCameraOn ? Strings.tr("cameraOn") : Strings.tr("cameraOff"),
                 systemImage: ble.isCameraOn ? "camera.fill" : "camera.slash"
             )
             .foregroundStyle(ble.isCameraOn ? .green : .red)
@@ -204,12 +210,12 @@ struct ContentView: View {
             HStack {
                 Spacer()
                 if ble.isTransmitting {
-                    Button("停止傳輸", role: .destructive) {
+                    Button(Strings.tr("stopTransmit"), role: .destructive) {
                         ble.stopTransmitting()
                     }
                     .buttonStyle(.borderedProminent)
                 } else {
-                    Button("開始傳輸") {
+                    Button(Strings.tr("startTransmit")) {
                         ble.startTransmitting()
                     }
                     .buttonStyle(.borderedProminent)
@@ -219,14 +225,14 @@ struct ContentView: View {
             }
         }
 
-        LabeledContent("已傳送封包") {
+        LabeledContent(Strings.tr("packetsSent")) {
             Text("\(ble.packetsSent)")
                 .monospacedDigit()
                 .foregroundStyle(.green)
         }
 
         if ble.packetsError > 0 {
-            LabeledContent("傳送失敗") {
+            LabeledContent(Strings.tr("transmitFailed")) {
                 Text("\(ble.packetsError)")
                     .monospacedDigit()
                     .foregroundStyle(.red)
@@ -237,6 +243,45 @@ struct ContentView: View {
             Text(error)
                 .font(.caption)
                 .foregroundStyle(.red)
+        }
+    }
+}
+
+struct LanguagePickerView: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var selectedLanguage = LocalizationManager.shared.language
+
+    var body: some View {
+        NavigationStack {
+            List {
+                ForEach(AppLanguage.allCases) { language in
+                    Button {
+                        selectedLanguage = language
+                    } label: {
+                        HStack {
+                            Text(language.displayName)
+                            Spacer()
+                            if selectedLanguage == language {
+                                Image(systemName: "checkmark")
+                                    .foregroundStyle(.blue)
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationTitle(Strings.tr("language"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        LocalizationManager.shared.language = selectedLanguage
+                        dismiss()
+                    }
+                }
+            }
+            .onAppear {
+                selectedLanguage = LocalizationManager.shared.language
+            }
         }
     }
 }

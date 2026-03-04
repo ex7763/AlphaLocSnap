@@ -14,7 +14,7 @@ struct LogView: View {
     var body: some View {
         List {
             if logs.entries.isEmpty {
-                Text("尚無日誌")
+                Text(Strings.tr("noLog"))
                     .foregroundStyle(.secondary)
             } else {
                 ForEach(logs.entries.reversed()) { entry in
@@ -35,11 +35,11 @@ struct LogView: View {
                 }
             }
         }
-        .navigationTitle("日誌")
+        .navigationTitle(Strings.tr("log"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             if !logs.entries.isEmpty {
-                Button("清除", role: .destructive) {
+                Button(Strings.tr("clear"), role: .destructive) {
                     logs.clear()
                 }
             }

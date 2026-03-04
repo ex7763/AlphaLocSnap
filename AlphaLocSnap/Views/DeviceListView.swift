@@ -21,11 +21,11 @@ struct DeviceListView: View {
     }
 
     var body: some View {
-        Toggle("只顯示 Sony 相機", isOn: $showOnlySony)
+        Toggle(Strings.tr("showOnlySony"), isOn: $showOnlySony)
             .toggleStyle(.switch)
 
         if filteredDevices.isEmpty {
-            Text(showOnlySony ? "未發現 Sony 相機" : "未發現裝置")
+            Text(showOnlySony ? Strings.tr("noSonyFound") : Strings.tr("noDeviceFound"))
                 .foregroundStyle(.secondary)
                 .font(.subheadline)
         } else {
