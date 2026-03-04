@@ -258,6 +258,7 @@ struct ContentView: View {
 struct LanguagePickerView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var selectedLanguage = LocalizationManager.shared.language
+    @State private var showRestartAlert = false
 
     var body: some View {
         NavigationStack {
@@ -282,13 +283,27 @@ struct LanguagePickerView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") {
-                        LocalizationManager.shared.language = selectedLanguage
-                        dismiss()
+                        if selectedLanguage != LocalizationManager.shared.language {
+                            LocalizationManager.shared.language = selectedLanguage
+                            showRestartAlert = true
+                        } else {
+                            dismiss()
+                        }
                     }
                 }
             }
             .onAppear {
                 selectedLanguage = LocalizationManager.shared.language
+            }
+            .alert(Strings.tr("restartRequired"), isPresented: $showRestartAlert) {
+                Button(Strings.tr("restartNow")) {
+                    exit(0)
+                }
+                Button(Strings.tr("restartLater"), role: .cancel) {
+                    dismiss()
+                }
+            } message: {
+                Text(Strings.tr("restartMessage"))
             }
         }
     }

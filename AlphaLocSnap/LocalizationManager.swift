@@ -156,7 +156,13 @@ struct Strings {
 
         // App Title
         "appTitle": "Sony GPS 傳輸",
-        "language": "語言"
+        "language": "語言",
+
+        // Restart Alert
+        "restartRequired": "需要重新啟動",
+        "restartMessage": "需要重新啟動應用程式才能套用語言變更。",
+        "restartNow": "立即重新啟動",
+        "restartLater": "稍後"
     ]
 
     static let en: [String: String] = [
@@ -261,6 +267,12 @@ struct Strings {
 
         // App Title
         "appTitle": "Sony GPS Transfer",
-        "language": "Language"
+        "language": "Language",
+
+        // Restart Alert
+        "restartRequired": "Restart Required",
+        "restartMessage": "You need to restart the app for the language change to take effect.",
+        "restartNow": "Restart Now",
+        "restartLater": "Later"
     ]
 }
