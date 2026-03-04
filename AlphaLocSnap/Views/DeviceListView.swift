@@ -1,6 +1,6 @@
 //
 //  DeviceListView.swift
-//  SonyCameraLocation
+//  AlphaLocSnap
 //
 //  顯示掃描到的 BLE 裝置列表
 //

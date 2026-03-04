@@ -1,6 +1,6 @@
 //
 //  BLEManager.swift
-//  SonyCameraLocation
+//  AlphaLocSnap
 //
 //  CoreBluetooth 掃描、連線、寫入管理
 //  支援 State Restoration、背景自動重連
@@ -56,7 +56,7 @@ private enum SetupPhase {
     case ready
 }
 
-private let kRestorationIdentifier = "com.hsupc.SonyCameraLocation.central"
+private let kRestorationIdentifier = "com.hsupc.AlphaLocSnap.central"
 private let kPairedPeripheralUUIDKey = "pairedPeripheralUUID"
 
 @Observable

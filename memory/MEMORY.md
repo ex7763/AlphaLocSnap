@@ -1,4 +1,4 @@
-# SonyCameraLocation Project Memory
+# AlphaLocSnap Project Memory
 
 ## 專案目標
 iOS App，透過 BLE (GATT) 將 iPhone GPS 座標傳送給 Sony 相機。
@@ -25,14 +25,14 @@ iOS App，透過 BLE (GATT) 將 iPhone GPS 座標傳送給 Sony 相機。
 
 ## 檔案結構
 ```
-SonyCameraLocation/
+AlphaLocSnap/
   AppModel.swift
   BLEManager.swift
   ContentView.swift
   GATTConstants.swift
   GPSPacketEncoder.swift
   LocationManager.swift
-  SonyCameraLocationApp.swift
+  AlphaLocSnapApp.swift
   Views/
     DeviceListView.swift
     StatusCardView.swift

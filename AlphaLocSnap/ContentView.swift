@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  SonyCameraLocation
+//  AlphaLocSnap
 //
 
 import CoreLocation
@@ -173,7 +173,7 @@ struct ContentView: View {
                     .buttonStyle(.borderedProminent)
                     .disabled(loc.currentLocation == nil)
                 }
-                Spacer()
+                
             }
         }
 

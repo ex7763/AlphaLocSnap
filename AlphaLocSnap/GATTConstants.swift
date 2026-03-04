@@ -1,6 +1,6 @@
 //
 //  GATTConstants.swift
-//  SonyCameraLocation
+//  AlphaLocSnap
 //
 //  Sony 相機 BLE GATT 常數（參考 Alpha-GPS 協定）
 //

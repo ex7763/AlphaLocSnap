@@ -1,6 +1,6 @@
 //
 //  GPSPacketEncoder.swift
-//  SonyCameraLocation
+//  AlphaLocSnap
 //
 //  Sony 相機 BLE GPS 封包編碼器（參考 Alpha-GPS 協定）
 //

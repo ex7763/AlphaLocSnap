@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate app icon for SonyCameraLocation app.
+"""Generate app icon for AlphaLocSnap app.
 
 Usage:
     pip install Pillow
@@ -14,7 +14,7 @@ from PIL import Image, ImageDraw
 
 SIZE = 1024
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-ICON_DIR = PROJECT_ROOT / "SonyCameraLocation" / "Assets.xcassets" / "AppIcon.appiconset"
+ICON_DIR = PROJECT_ROOT / "AlphaLocSnap" / "Assets.xcassets" / "AppIcon.appiconset"
 
 
 def draw_icon() -> Image.Image:

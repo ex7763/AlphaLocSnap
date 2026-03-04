@@ -1,6 +1,6 @@
 //
 //  StatusCardView.swift
-//  SonyCameraLocation
+//  AlphaLocSnap
 //
 //  顯示 BLE 連線狀態與操作按鈕
 //

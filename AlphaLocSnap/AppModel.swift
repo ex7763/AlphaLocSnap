@@ -1,6 +1,6 @@
 //
 //  AppModel.swift
-//  SonyCameraLocation
+//  AlphaLocSnap
 //
 //  組合 LocationManager 與 BLEManager
 //  整合通知、連線紀錄寫入、位置驅動 GPS 傳送

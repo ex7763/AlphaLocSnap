@@ -1,6 +1,6 @@
 //
 //  LogView.swift
-//  SonyCameraLocation
+//  AlphaLocSnap
 //
 //  顯示 App 運行日誌
 

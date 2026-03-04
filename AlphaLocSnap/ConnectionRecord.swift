@@ -1,6 +1,6 @@
 //
 //  ConnectionRecord.swift
-//  SonyCameraLocation
+//  AlphaLocSnap
 //
 //  BLE 連線紀錄的 SwiftData 模型
 //

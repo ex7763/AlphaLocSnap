@@ -1,6 +1,6 @@
 //
 //  ConnectionMapView.swift
-//  SonyCameraLocation
+//  AlphaLocSnap
 //
 //  顯示最近連線紀錄的地圖視圖
 //

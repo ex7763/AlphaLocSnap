@@ -1,6 +1,6 @@
 //
 //  LogStore.swift
-//  SonyCameraLocation
+//  AlphaLocSnap
 //
 //  記錄 App 運行事件（連線、斷線、GPS 更新等）
 

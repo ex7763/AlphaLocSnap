@@ -1,6 +1,6 @@
 //
 //  LocationManager.swift
-//  SonyCameraLocation
+//  AlphaLocSnap
 //
 //  CoreLocation 封裝，使用 @Observable
 //  支援背景定位
