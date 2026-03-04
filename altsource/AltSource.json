@@ -29,11 +29,11 @@
       },
       "versions": [
         {
-          "version": "1.0.0",
-          "buildVersion": "1",
+          "version": "1.1.0",
+          "buildVersion": "2",
           "date": "2026-03-05T00:00:00Z",
-          "localizedDescription": "Initial release\n\n- Connect to Sony Alpha cameras via Bluetooth\n- Automatic GPS tagging for photos\n- Support for multiple Sony camera models",
-          "downloadURL": "https://github.com/ex7763/AlphaLocSnap/releases/download/v1.0/AlphaLocSnap.ipa",
+          "localizedDescription": "Language support & Custom GPS mode updates\n\n- Add English and Traditional Chinese language support\n- Custom GPS mode: default distance filter 15m, update interval 30s\n- Update interval slider: 1-120 seconds\n- Restart prompt after language change",
+          "downloadURL": "https://github.com/ex7763/AlphaLocSnap/releases/download/v1.1.0/AlphaLocSnap.ipa",
           "size": 5000000
         }
       ]
