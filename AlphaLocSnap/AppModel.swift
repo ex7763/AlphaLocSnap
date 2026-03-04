@@ -23,12 +23,25 @@ final class AppModel: NSObject, UNUserNotificationCenterDelegate {
     @ObservationIgnored
     @AppStorage("notifyOnDisconnect") var notifyOnDisconnect = true
 
+    /// GPS 更新間隔（秒），對應 GPSUpdateMode.rawValue
+    @ObservationIgnored
+    @AppStorage("gpsUpdateInterval") var gpsUpdateInterval = GPSUpdateMode.standard.rawValue
+
+    /// 上次實際送出 GPS 封包的時間（throttle 用）
+    @ObservationIgnored
+    private var lastSentDate: Date = .distantPast
+
     /// SwiftData context，由 View 注入
     @ObservationIgnored
     var modelContext: ModelContext?
 
     override init() {
         super.init()
+
+        // 套用儲存的 GPS 模式
+        if let mode = GPSUpdateMode(rawValue: gpsUpdateInterval) {
+            locationManager.applyMode(mode)
+        }
 
         // 設定通知代理，讓前景也能顯示通知
         UNUserNotificationCenter.current().delegate = self
@@ -37,19 +50,22 @@ final class AppModel: NSObject, UNUserNotificationCenterDelegate {
             self?.locationManager.currentLocation
         }
 
-        // 連線成功回調：寫入紀錄 + 發通知
+        // 連線成功回調：寫入紀錄 + 發通知 + 啟動 GPS
         bleManager.onConnect = { [weak self] deviceName in
             self?.handleConnection(deviceName: deviceName)
         }
 
-        // 斷線回調：發通知
+        // 斷線回調：發通知 + 停止 GPS
         bleManager.onDisconnect = { [weak self] deviceName in
             self?.handleDisconnection(deviceName: deviceName)
         }
 
-        // 位置更新回調：驅動 GPS 傳送（取代 Timer）
+        // 位置更新回調：驅動 GPS 傳送（含 throttle）
         locationManager.onLocationUpdate = { [weak self] location in
             guard let self, self.bleManager.isTransmitting else { return }
+            let interval = TimeInterval(self.gpsUpdateInterval)
+            guard Date().timeIntervalSince(self.lastSentDate) >= interval else { return }
+            self.lastSentDate = Date()
             self.bleManager.sendGPSPacket()
             let coord = location.coordinate
             self.logStore.log(.gps, String(
@@ -59,6 +75,13 @@ final class AppModel: NSObject, UNUserNotificationCenterDelegate {
         }
 
         locationManager.requestPermission()
+    }
+
+    /// 切換 GPS 模式時呼叫
+    func applyGPSMode(_ mode: GPSUpdateMode) {
+        gpsUpdateInterval = mode.rawValue
+        locationManager.applyMode(mode)
+        logStore.log(.gps, "GPS 模式切換為：\(mode.label)")
     }
 
     // MARK: - UNUserNotificationCenterDelegate
@@ -116,11 +139,13 @@ final class AppModel: NSObject, UNUserNotificationCenterDelegate {
         saveConnectionRecord(deviceName: deviceName)
         sendConnectionNotification(deviceName: deviceName)
         logStore.log(.connection, "\(deviceName) 已連線")
+        locationManager.startUpdating()
     }
 
     private func handleDisconnection(deviceName: String) {
         sendDisconnectionNotification(deviceName: deviceName)
         logStore.log(.connection, "\(deviceName) 已斷線")
+        locationManager.stopUpdating()
     }
 
     private func saveConnectionRecord(deviceName: String) {

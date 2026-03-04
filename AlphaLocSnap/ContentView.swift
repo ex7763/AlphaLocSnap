@@ -16,6 +16,7 @@ struct ContentView: View {
 
     @AppStorage("notifyOnConnect") private var notifyOnConnect = true
     @AppStorage("notifyOnDisconnect") private var notifyOnDisconnect = true
+    @AppStorage("gpsUpdateInterval") private var gpsUpdateInterval = GPSUpdateMode.standard.rawValue
 
     private var ble: BLEManager { appModel.bleManager }
     private var loc: LocationManager { appModel.locationManager }
@@ -54,6 +55,16 @@ struct ContentView: View {
 
                 // MARK: 設定
                 Section("設定") {
+                    Picker("GPS 更新模式", selection: $gpsUpdateInterval) {
+                        ForEach(GPSUpdateMode.allCases, id: \.rawValue) { mode in
+                            Text(mode.label).tag(mode.rawValue)
+                        }
+                    }
+                    .onChange(of: gpsUpdateInterval) { _, newValue in
+                        if let mode = GPSUpdateMode(rawValue: newValue) {
+                            appModel.applyGPSMode(mode)
+                        }
+                    }
                     Toggle("連線通知", isOn: $notifyOnConnect)
                     Toggle("斷線通知", isOn: $notifyOnDisconnect)
                     Toggle("自動重連", isOn: Bindable(ble).autoConnectEnabled)
