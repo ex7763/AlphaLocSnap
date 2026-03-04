@@ -166,6 +166,18 @@ final class AppModel: NSObject, UNUserNotificationCenterDelegate {
         sendConnectionNotification(deviceName: deviceName)
         logStore.log(.connection, "\(deviceName) 已連線")
         locationManager.startUpdating()
+
+        // 連線時立即傳送一次位置
+        if bleManager.isTransmitting, locationManager.currentLocation != nil {
+            lastSentDate = Date()
+            bleManager.sendGPSPacket()
+            if let coord = locationManager.currentLocation?.coordinate {
+                logStore.log(.gps, String(
+                    format: "連線立即傳送 %.5f, %.5f",
+                    coord.latitude, coord.longitude
+                ))
+            }
+        }
     }
 
     private func handleDisconnection(deviceName: String) {
