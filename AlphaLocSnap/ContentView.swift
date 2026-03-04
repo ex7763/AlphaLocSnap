@@ -135,8 +135,7 @@ struct ContentView: View {
                                 HStack {
                                     Image(systemName: "clock")
                                         .foregroundStyle(.secondary)
-                                    Text(record.connectedAt, style: .relative)
-                                        + Text(" 前")
+                                    Text(record.connectedAt, format: .dateTime.month().day().hour().minute())
                                 }
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
