@@ -65,6 +65,11 @@ final class AppModel: NSObject, UNUserNotificationCenterDelegate {
         // 套用靜止偵測設定
         applyStationarySettings()
 
+        // GPS 系統事件日誌
+        locationManager.onGPSEvent = { [weak self] message in
+            self?.logStore.log(.gps, message)
+        }
+
         // 靜止狀態變更回調
         locationManager.onStationaryStateChanged = { [weak self] isStationary in
             guard let self else { return }

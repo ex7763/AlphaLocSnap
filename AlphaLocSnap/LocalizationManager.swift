@@ -105,6 +105,13 @@ struct Strings {
         "stationaryStatus": "靜止省電中",
         "stationaryMinutes": "分鐘",
 
+        // GPS System Events
+        "gpsStartUpdating": "向系統請求 GPS 定位更新",
+        "gpsStopUpdating": "停止系統 GPS 定位更新",
+        "gpsConfigApplied": "GPS 設定：accuracy=%@, distanceFilter=%@m",
+        "gpsAccuracyChanged": "靜止省電：accuracy=%@, distanceFilter=%@",
+        "gpsAccuracyRestored": "恢復 GPS 設定：accuracy=%@, distanceFilter=%@m",
+
         // Toggles
         "connectionNotification": "連線通知",
         "disconnectionNotification": "斷線通知",
@@ -225,6 +232,13 @@ struct Strings {
         "stationaryExited": "Movement detected, resuming normal GPS updates",
         "stationaryStatus": "Stationary",
         "stationaryMinutes": "min",
+
+        // GPS System Events
+        "gpsStartUpdating": "Requesting GPS location updates from system",
+        "gpsStopUpdating": "Stopped system GPS location updates",
+        "gpsConfigApplied": "GPS config: accuracy=%@, distanceFilter=%@m",
+        "gpsAccuracyChanged": "Stationary saving: accuracy=%@, distanceFilter=%@",
+        "gpsAccuracyRestored": "Restored GPS config: accuracy=%@, distanceFilter=%@m",
 
         // Toggles
         "connectionNotification": "Connection Notification",

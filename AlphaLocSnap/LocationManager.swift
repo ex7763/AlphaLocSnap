@@ -118,6 +118,10 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
     @ObservationIgnored
     var onLocationUpdate: ((CLLocation) -> Void)?
 
+    /// 開發者日誌回調，記錄 GPS 系統層級事件
+    @ObservationIgnored
+    var onGPSEvent: ((String) -> Void)?
+
     override init() {
         super.init()
         clManager.delegate = self
@@ -133,6 +137,9 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
         clManager.desiredAccuracy = mode.desiredAccuracy
         clManager.distanceFilter = mode.distanceFilter
         clManager.pausesLocationUpdatesAutomatically = (mode == .powerSaving)
+        onGPSEvent?(Strings.tr("gpsConfigApplied",
+            String(format: "%.0f", mode.desiredAccuracy),
+            String(format: "%.0f", mode.distanceFilter)))
     }
 
     /// 自訂模式：直接設定精度與距離過濾
@@ -141,6 +148,9 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
         clManager.desiredAccuracy = accuracy
         clManager.distanceFilter = distanceFilter
         clManager.pausesLocationUpdatesAutomatically = false
+        onGPSEvent?(Strings.tr("gpsConfigApplied",
+            String(format: "%.0f", accuracy),
+            String(format: "%.0f", distanceFilter)))
     }
 
     // MARK: - 靜止偵測邏輯
@@ -184,6 +194,7 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
         clManager.desiredAccuracy = kCLLocationAccuracyThreeKilometers
         clManager.distanceFilter = 500
         isStationary = true
+        onGPSEvent?(Strings.tr("gpsAccuracyChanged", "3km", "500m"))
         onStationaryStateChanged?(true)
     }
 
@@ -194,11 +205,14 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
         if let filter = savedDistanceFilter {
             clManager.distanceFilter = filter
         }
+        let restoredAcc = savedAccuracy.map { String(format: "%.0f", $0) } ?? "?"
+        let restoredFilter = savedDistanceFilter.map { String(format: "%.0f", $0) } ?? "?"
         savedAccuracy = nil
         savedDistanceFilter = nil
         isStationary = false
         stationaryAnchor = nil
         lastMovementDate = Date()
+        onGPSEvent?(Strings.tr("gpsAccuracyRestored", restoredAcc, restoredFilter))
         onStationaryStateChanged?(false)
     }
 
@@ -220,10 +234,12 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
 
     func startUpdating() {
         clManager.startUpdatingLocation()
+        onGPSEvent?(Strings.tr("gpsStartUpdating"))
     }
 
     func stopUpdating() {
         clManager.stopUpdatingLocation()
+        onGPSEvent?(Strings.tr("gpsStopUpdating"))
     }
 
     private func configureBackgroundUpdates() {
