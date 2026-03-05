@@ -247,12 +247,8 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         authorizationStatus = manager.authorizationStatus
-        if manager.authorizationStatus == .authorizedWhenInUse ||
-           manager.authorizationStatus == .authorizedAlways {
-            if manager.authorizationStatus == .authorizedAlways {
-                configureBackgroundUpdates()
-            }
-            clManager.startUpdatingLocation()
+        if manager.authorizationStatus == .authorizedAlways {
+            configureBackgroundUpdates()
         }
     }
 }
