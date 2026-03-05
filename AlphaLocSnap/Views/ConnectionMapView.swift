@@ -10,38 +10,11 @@ import SwiftUI
 
 struct ConnectionMapView: View {
     var records: [ConnectionRecord]
-
-    private var region: MapCameraPosition {
-        guard let last = records.first else {
-            // 預設台北
-            return .region(MKCoordinateRegion(
-                center: CLLocationCoordinate2D(latitude: 25.033, longitude: 121.565),
-                span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-            ))
-        }
-
-        if records.count == 1 {
-            return .region(MKCoordinateRegion(
-                center: CLLocationCoordinate2D(latitude: last.latitude, longitude: last.longitude),
-                span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
-            ))
-        }
-
-        let lats = records.map(\.latitude)
-        let lons = records.map(\.longitude)
-        let center = CLLocationCoordinate2D(
-            latitude: (lats.min()! + lats.max()!) / 2,
-            longitude: (lons.min()! + lons.max()!) / 2
-        )
-        let span = MKCoordinateSpan(
-            latitudeDelta: max((lats.max()! - lats.min()!) * 1.5, 0.01),
-            longitudeDelta: max((lons.max()! - lons.min()!) * 1.5, 0.01)
-        )
-        return .region(MKCoordinateRegion(center: center, span: span))
-    }
+    @Binding var cameraPosition: MapCameraPosition
+    var currentLocation: CLLocation?
 
     var body: some View {
-        Map(initialPosition: region) {
+        Map(position: $cameraPosition) {
             ForEach(records) { record in
                 Marker(
                     record.deviceName,
@@ -52,8 +25,36 @@ struct ConnectionMapView: View {
                     )
                 )
             }
+            if let loc = currentLocation {
+                Marker(
+                    Strings.tr("currentLocation"),
+                    systemImage: "location.fill",
+                    coordinate: loc.coordinate
+                )
+                .tint(.blue)
+            }
         }
         .frame(height: 250)
         .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(alignment: .topTrailing) {
+            Button {
+                if let loc = currentLocation {
+                    withAnimation {
+                        cameraPosition = .region(MKCoordinateRegion(
+                            center: loc.coordinate,
+                            span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+                        ))
+                    }
+                }
+            } label: {
+                Image(systemName: "location.fill")
+                    .font(.system(size: 16))
+                    .padding(8)
+                    .background(.ultraThinMaterial)
+                    .clipShape(Circle())
+            }
+            .padding(8)
+            .disabled(currentLocation == nil)
+        }
     }
 }

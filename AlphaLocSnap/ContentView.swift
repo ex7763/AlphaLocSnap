@@ -22,12 +22,41 @@ struct ContentView: View {
     @AppStorage("customInterval") private var customInterval: Int = 30
 
     @State private var showLanguagePicker = false
+    @State private var mapCameraPosition: MapCameraPosition = .automatic
 
     private var ble: BLEManager { appModel.bleManager }
     private var loc: LocationManager { appModel.locationManager }
 
     private var recentRecords: [ConnectionRecord] {
         Array(allRecords.prefix(10))
+    }
+
+    private func defaultMapPosition() -> MapCameraPosition {
+        guard let last = recentRecords.first else {
+            return .region(MKCoordinateRegion(
+                center: CLLocationCoordinate2D(latitude: 25.033, longitude: 121.565),
+                span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+            ))
+        }
+
+        if recentRecords.count == 1 {
+            return .region(MKCoordinateRegion(
+                center: CLLocationCoordinate2D(latitude: last.latitude, longitude: last.longitude),
+                span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+            ))
+        }
+
+        let lats = recentRecords.map(\.latitude)
+        let lons = recentRecords.map(\.longitude)
+        let center = CLLocationCoordinate2D(
+            latitude: (lats.min()! + lats.max()!) / 2,
+            longitude: (lons.min()! + lons.max()!) / 2
+        )
+        let span = MKCoordinateSpan(
+            latitudeDelta: max((lats.max()! - lats.min()!) * 1.5, 0.01),
+            longitudeDelta: max((lons.max()! - lons.min()!) * 1.5, 0.01)
+        )
+        return .region(MKCoordinateRegion(center: center, span: span))
     }
 
     var body: some View {
@@ -133,20 +162,36 @@ struct ContentView: View {
                         Label(Strings.tr("noConnectionHistory"), systemImage: "clock")
                             .foregroundStyle(.secondary)
                     } else {
-                        ConnectionMapView(records: recentRecords)
-                            .listRowInsets(EdgeInsets())
+                        ConnectionMapView(
+                            records: recentRecords,
+                            cameraPosition: $mapCameraPosition,
+                            currentLocation: loc.currentLocation
+                        )
+                        .listRowInsets(EdgeInsets())
 
                         ForEach(recentRecords) { record in
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(record.deviceName)
                                     .font(.headline)
-                                HStack {
-                                    Image(systemName: "location.fill")
-                                        .foregroundStyle(.blue)
-                                    Text(String(format: "%.4f, %.4f", record.latitude, record.longitude))
-                                        .monospacedDigit()
+                                Button {
+                                    withAnimation {
+                                        mapCameraPosition = .region(MKCoordinateRegion(
+                                            center: CLLocationCoordinate2D(
+                                                latitude: record.latitude,
+                                                longitude: record.longitude
+                                            ),
+                                            span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
+                                        ))
+                                    }
+                                } label: {
+                                    HStack {
+                                        Image(systemName: "location.fill")
+                                            .foregroundStyle(.blue)
+                                        Text(String(format: "%.4f, %.4f", record.latitude, record.longitude))
+                                            .monospacedDigit()
+                                    }
+                                    .font(.caption)
                                 }
-                                .font(.caption)
                                 HStack {
                                     Image(systemName: "clock")
                                         .foregroundStyle(.secondary)
@@ -167,6 +212,7 @@ struct ContentView: View {
             }
             .onAppear {
                 appModel.modelContext = modelContext
+                mapCameraPosition = defaultMapPosition()
             }
         }
     }

@@ -131,6 +131,7 @@ struct Strings {
 
         // Connection History
         "noConnectionHistory": "尚無連線紀錄",
+        "currentLocation": "目前位置",
 
         // Notifications
         "cameraConnected": "Sony 相機已連線",
@@ -243,6 +244,7 @@ struct Strings {
 
         // Connection History
         "noConnectionHistory": "No Connection History",
+        "currentLocation": "Current Location",
 
         // Notifications
         "cameraConnected": "Sony Camera Connected",
