@@ -35,6 +35,12 @@ final class AppModel: NSObject, UNUserNotificationCenterDelegate {
     @ObservationIgnored
     @AppStorage("customInterval") var customInterval: Int = 30
 
+    /// 靜止偵測設定
+    @ObservationIgnored
+    @AppStorage("stationaryDetectionEnabled") var stationaryDetectionEnabled = true
+    @ObservationIgnored
+    @AppStorage("stationaryThresholdMinutes") var stationaryThresholdMinutes: Int = 2
+
     /// 上次實際送出 GPS 封包的時間（throttle 用）
     @ObservationIgnored
     private var lastSentDate: Date = .distantPast
@@ -53,6 +59,19 @@ final class AppModel: NSObject, UNUserNotificationCenterDelegate {
                 locationManager.applyCustom(accuracy: accuracy, distanceFilter: customDistanceFilter)
             } else {
                 locationManager.applyMode(mode)
+            }
+        }
+
+        // 套用靜止偵測設定
+        applyStationarySettings()
+
+        // 靜止狀態變更回調
+        locationManager.onStationaryStateChanged = { [weak self] isStationary in
+            guard let self else { return }
+            if isStationary {
+                self.logStore.log(.gps, Strings.tr("stationaryEntered"))
+            } else {
+                self.logStore.log(.gps, Strings.tr("stationaryExited"))
             }
         }
 
@@ -94,6 +113,7 @@ final class AppModel: NSObject, UNUserNotificationCenterDelegate {
     /// 切換 GPS 模式時呼叫
     func applyGPSMode(_ mode: GPSUpdateMode) {
         gpsUpdateInterval = mode.rawValue
+        locationManager.resetStationaryDetection()
         if mode == .custom {
             applyCustomGPSSettings()
         } else {
@@ -106,6 +126,12 @@ final class AppModel: NSObject, UNUserNotificationCenterDelegate {
     func applyCustomGPSSettings() {
         let accuracy = AccuracyOption(rawValue: customAccuracy)?.clAccuracy ?? kCLLocationAccuracyBest
         locationManager.applyCustom(accuracy: accuracy, distanceFilter: customDistanceFilter)
+    }
+
+    /// 套用靜止偵測設定到 LocationManager
+    func applyStationarySettings() {
+        locationManager.stationaryDetectionEnabled = stationaryDetectionEnabled
+        locationManager.stationaryThresholdDuration = TimeInterval(stationaryThresholdMinutes * 60)
     }
 
     // MARK: - UNUserNotificationCenterDelegate

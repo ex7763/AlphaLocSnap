@@ -81,6 +81,39 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
     var currentLocation: CLLocation?
     var authorizationStatus: CLAuthorizationStatus = .notDetermined
 
+    // MARK: - 靜止偵測
+
+    /// 目前是否處於靜止省電模式
+    var isStationary = false
+
+    /// 靜止偵測開關
+    @ObservationIgnored
+    var stationaryDetectionEnabled = true
+
+    /// 靜止判定閾值時間（秒）
+    @ObservationIgnored
+    var stationaryThresholdDuration: TimeInterval = 120
+
+    /// 靜止狀態變更回調
+    @ObservationIgnored
+    var onStationaryStateChanged: ((Bool) -> Void)?
+
+    /// 靜止錨點位置
+    @ObservationIgnored
+    private var stationaryAnchor: CLLocation?
+
+    /// 最後偵測到移動的時間
+    @ObservationIgnored
+    private var lastMovementDate = Date()
+
+    /// 進入靜止前儲存的精度設定
+    @ObservationIgnored
+    private var savedAccuracy: CLLocationAccuracy?
+
+    /// 進入靜止前儲存的距離過濾設定
+    @ObservationIgnored
+    private var savedDistanceFilter: CLLocationDistance?
+
     /// 位置更新回調，供 AppModel 在背景中驅動 GPS 傳送
     @ObservationIgnored
     var onLocationUpdate: ((CLLocation) -> Void)?
@@ -96,6 +129,7 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
 
     /// 根據 GPS 模式動態調整 CLLocationManager 設定
     func applyMode(_ mode: GPSUpdateMode) {
+        resetStationaryDetection()
         clManager.desiredAccuracy = mode.desiredAccuracy
         clManager.distanceFilter = mode.distanceFilter
         clManager.pausesLocationUpdatesAutomatically = (mode == .powerSaving)
@@ -103,9 +137,81 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
 
     /// 自訂模式：直接設定精度與距離過濾
     func applyCustom(accuracy: CLLocationAccuracy, distanceFilter: CLLocationDistance) {
+        resetStationaryDetection()
         clManager.desiredAccuracy = accuracy
         clManager.distanceFilter = distanceFilter
         clManager.pausesLocationUpdatesAutomatically = false
+    }
+
+    // MARK: - 靜止偵測邏輯
+
+    /// 評估是否進入/退出靜止模式
+    private func evaluateStationaryState(newLocation: CLLocation) {
+        guard stationaryDetectionEnabled else { return }
+
+        // 忽略低精度定位點
+        guard newLocation.horizontalAccuracy >= 0,
+              newLocation.horizontalAccuracy < 100 else { return }
+
+        if isStationary {
+            // 靜止模式：檢查是否有移動
+            if let anchor = stationaryAnchor,
+               newLocation.distance(from: anchor) >= 15 {
+                exitStationaryMode()
+            }
+        } else {
+            // 正常模式：追蹤是否靜止
+            if let anchor = stationaryAnchor {
+                if newLocation.distance(from: anchor) >= 10 {
+                    // 有移動，重設錨點
+                    stationaryAnchor = newLocation
+                    lastMovementDate = Date()
+                } else if Date().timeIntervalSince(lastMovementDate) >= stationaryThresholdDuration {
+                    // 超過閾值未移動，進入靜止
+                    enterStationaryMode()
+                }
+            } else {
+                // 初始化錨點
+                stationaryAnchor = newLocation
+                lastMovementDate = Date()
+            }
+        }
+    }
+
+    private func enterStationaryMode() {
+        savedAccuracy = clManager.desiredAccuracy
+        savedDistanceFilter = clManager.distanceFilter
+        clManager.desiredAccuracy = kCLLocationAccuracyThreeKilometers
+        clManager.distanceFilter = 500
+        isStationary = true
+        onStationaryStateChanged?(true)
+    }
+
+    private func exitStationaryMode() {
+        if let accuracy = savedAccuracy {
+            clManager.desiredAccuracy = accuracy
+        }
+        if let filter = savedDistanceFilter {
+            clManager.distanceFilter = filter
+        }
+        savedAccuracy = nil
+        savedDistanceFilter = nil
+        isStationary = false
+        stationaryAnchor = nil
+        lastMovementDate = Date()
+        onStationaryStateChanged?(false)
+    }
+
+    /// 重設靜止偵測狀態（模式切換時呼叫）
+    func resetStationaryDetection() {
+        if isStationary {
+            // 直接清除狀態，不恢復設定（因為即將套用新設定）
+            isStationary = false
+            savedAccuracy = nil
+            savedDistanceFilter = nil
+        }
+        stationaryAnchor = nil
+        lastMovementDate = Date()
     }
 
     func requestPermission() {
@@ -131,6 +237,7 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         currentLocation = location
+        evaluateStationaryState(newLocation: location)
         onLocationUpdate?(location)
     }
 

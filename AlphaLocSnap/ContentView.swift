@@ -20,6 +20,8 @@ struct ContentView: View {
     @AppStorage("customAccuracy") private var customAccuracy = AccuracyOption.best.rawValue
     @AppStorage("customDistanceFilter") private var customDistanceFilter: Double = 15.0
     @AppStorage("customInterval") private var customInterval: Int = 30
+    @AppStorage("stationaryDetectionEnabled") private var stationaryDetectionEnabled = true
+    @AppStorage("stationaryThresholdMinutes") private var stationaryThresholdMinutes: Int = 2
 
     @State private var showLanguagePicker = false
     @State private var mapCameraPosition: MapCameraPosition = .automatic
@@ -130,6 +132,28 @@ struct ContentView: View {
                         }
                     }
 
+                    Toggle(Strings.tr("stationaryDetection"), isOn: $stationaryDetectionEnabled)
+                        .onChange(of: stationaryDetectionEnabled) { _, _ in
+                            appModel.applyStationarySettings()
+                        }
+
+                    if stationaryDetectionEnabled {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("\(Strings.tr("stationaryThreshold")): \(stationaryThresholdMinutes) \(Strings.tr("stationaryMinutes"))")
+                            Slider(
+                                value: Binding(
+                                    get: { Double(stationaryThresholdMinutes) },
+                                    set: { stationaryThresholdMinutes = Int($0) }
+                                ),
+                                in: 1...10,
+                                step: 1
+                            )
+                        }
+                        .onChange(of: stationaryThresholdMinutes) { _, _ in
+                            appModel.applyStationarySettings()
+                        }
+                    }
+
                     Toggle(Strings.tr("connectionNotification"), isOn: $notifyOnConnect)
                     Toggle(Strings.tr("disconnectionNotification"), isOn: $notifyOnDisconnect)
                     Toggle(Strings.tr("autoReconnect"), isOn: Bindable(ble).autoConnectEnabled)
@@ -229,6 +253,10 @@ struct ContentView: View {
                 .foregroundStyle(.red)
         case .authorizedWhenInUse, .authorizedAlways:
             if let location = loc.currentLocation {
+                if loc.isStationary {
+                    Label(Strings.tr("stationaryStatus"), systemImage: "pause.circle.fill")
+                        .foregroundStyle(.orange)
+                }
                 LabeledContent(Strings.tr("latitude")) {
                     Text(String(format: "%.6f°", location.coordinate.latitude))
                         .monospacedDigit()

@@ -97,6 +97,14 @@ struct Strings {
         "noFilter": "無",
         "seconds": "秒",
 
+        // Stationary Detection
+        "stationaryDetection": "靜止偵測省電",
+        "stationaryThreshold": "靜止判定時間",
+        "stationaryEntered": "進入靜止模式，降低 GPS 更新頻率",
+        "stationaryExited": "偵測到移動，恢復正常 GPS 更新",
+        "stationaryStatus": "靜止省電中",
+        "stationaryMinutes": "分鐘",
+
         // Toggles
         "connectionNotification": "連線通知",
         "disconnectionNotification": "斷線通知",
@@ -209,6 +217,14 @@ struct Strings {
         "updateInterval": "Update Interval",
         "noFilter": "None",
         "seconds": "sec",
+
+        // Stationary Detection
+        "stationaryDetection": "Stationary Detection",
+        "stationaryThreshold": "Stationary Timeout",
+        "stationaryEntered": "Entered stationary mode, reducing GPS updates",
+        "stationaryExited": "Movement detected, resuming normal GPS updates",
+        "stationaryStatus": "Stationary",
+        "stationaryMinutes": "min",
 
         // Toggles
         "connectionNotification": "Connection Notification",
