@@ -8,6 +8,13 @@
 由於 Sony 的 Creator's App 太不穩定，常常無法自動連接相機  
 AppStore 上的 app 又賣太貴，因此我們團隊決定（90%是claude code)自己做一個出來
 
+## 截圖
+
+<p align="center">
+  <img src="screenshots/main-screen.png" width="280" alt="主畫面 - GPS 位置與設定">
+  <img src="screenshots/connection-history.png" width="280" alt="連線紀錄與地圖">
+</p>
+
 ## 下載與安裝
 
 ### 直接下載
