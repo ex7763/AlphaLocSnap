@@ -222,5 +222,6 @@ final class AppModel: NSObject, UNUserNotificationCenterDelegate {
             longitude: location.coordinate.longitude
         )
         context.insert(record)
+        try? context.save()
     }
 }
