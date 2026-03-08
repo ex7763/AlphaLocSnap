@@ -179,6 +179,12 @@ struct ContentView: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
+
+                    NavigationLink {
+                        RecordMapView()
+                    } label: {
+                        Label(Strings.tr("recordMap"), systemImage: "map")
+                    }
                 }
 
                 Section(Strings.tr("connectionHistory")) {

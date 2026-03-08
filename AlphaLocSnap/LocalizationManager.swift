@@ -144,6 +144,10 @@ struct Strings {
         "noLog": "尚無日誌",
         "clear": "清除",
 
+        // Record Map
+        "recordMap": "紀錄地圖",
+        "noGPSRecord": "尚無 GPS 座標紀錄",
+
         // Connection History
         "noConnectionHistory": "尚無連線紀錄",
         "currentLocation": "目前位置",
@@ -271,6 +275,10 @@ struct Strings {
         "log": "Log",
         "noLog": "No Log",
         "clear": "Clear",
+
+        // Record Map
+        "recordMap": "Record Map",
+        "noGPSRecord": "No GPS coordinate records",
 
         // Connection History
         "noConnectionHistory": "No Connection History",

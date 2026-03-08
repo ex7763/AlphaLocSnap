@@ -109,7 +109,8 @@ final class AppModel: NSObject, UNUserNotificationCenterDelegate {
             self.bleManager.sendGPSPacket()
             let coord = location.coordinate
             self.logStore.log(.gps, Strings.tr("gpsTransmit",
-                coord.latitude, coord.longitude, location.horizontalAccuracy))
+                coord.latitude, coord.longitude, location.horizontalAccuracy),
+                coordinate: coord)
         }
 
         locationManager.requestPermission()
@@ -201,7 +202,8 @@ final class AppModel: NSObject, UNUserNotificationCenterDelegate {
             lastSentDate = Date()
             bleManager.sendGPSPacket()
             if let coord = locationManager.currentLocation?.coordinate {
-                logStore.log(.gps, Strings.tr("gpsImmediateTransmit", coord.latitude, coord.longitude))
+                logStore.log(.gps, Strings.tr("gpsImmediateTransmit", coord.latitude, coord.longitude),
+                    coordinate: coord)
             }
         }
     }

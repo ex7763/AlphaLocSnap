@@ -14,6 +14,8 @@ struct LogEntry: Identifiable, Codable {
     let timestamp: Date
     let category: Category
     let message: String
+    let latitude: Double?
+    let longitude: Double?
 
     enum Category: String, Codable {
         case connection = "連線"
@@ -21,11 +23,13 @@ struct LogEntry: Identifiable, Codable {
         case error = "錯誤"
     }
 
-    init(timestamp: Date, category: Category, message: String) {
+    init(timestamp: Date, category: Category, message: String, latitude: Double? = nil, longitude: Double? = nil) {
         self.id = UUID()
         self.timestamp = timestamp
         self.category = category
         self.message = message
+        self.latitude = latitude
+        self.longitude = longitude
     }
 }
 
@@ -48,6 +52,18 @@ final class LogStore {
 
     func log(_ category: LogEntry.Category, _ message: String) {
         let entry = LogEntry(timestamp: Date(), category: category, message: message)
+        entries.append(entry)
+        if entries.count > maxEntries {
+            entries.removeFirst(entries.count - maxEntries)
+        }
+        save()
+    }
+
+    func log(_ category: LogEntry.Category, _ message: String, coordinate: CLLocationCoordinate2D?) {
+        let entry = LogEntry(
+            timestamp: Date(), category: category, message: message,
+            latitude: coordinate?.latitude, longitude: coordinate?.longitude
+        )
         entries.append(entry)
         if entries.count > maxEntries {
             entries.removeFirst(entries.count - maxEntries)
