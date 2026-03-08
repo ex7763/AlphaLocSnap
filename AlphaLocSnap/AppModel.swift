@@ -45,6 +45,10 @@ final class AppModel: NSObject, UNUserNotificationCenterDelegate {
     @ObservationIgnored
     private var lastSentDate: Date = .distantPast
 
+    /// 等待 GPS 就緒後再建立連線紀錄的裝置名稱
+    @ObservationIgnored
+    private var pendingRecordDeviceName: String?
+
     /// SwiftData context，由 View 注入
     @ObservationIgnored
     var modelContext: ModelContext?
@@ -97,9 +101,17 @@ final class AppModel: NSObject, UNUserNotificationCenterDelegate {
             self?.handleDisconnection(deviceName: deviceName)
         }
 
-        // 位置更新回調：驅動 GPS 傳送（含 throttle）
+        // 位置更新回調：建立待處理紀錄 + 驅動 GPS 傳送（含 throttle）
         locationManager.onLocationUpdate = { [weak self] location in
-            guard let self, self.bleManager.isTransmitting else { return }
+            guard let self else { return }
+
+            // GPS 就緒後建立延遲的連線紀錄
+            if let deviceName = self.pendingRecordDeviceName {
+                self.pendingRecordDeviceName = nil
+                self.saveConnectionRecord(deviceName: deviceName)
+            }
+
+            guard self.bleManager.isTransmitting else { return }
             let seconds = self.gpsUpdateInterval == GPSUpdateMode.custom.rawValue
                 ? self.customInterval
                 : self.gpsUpdateInterval
@@ -192,10 +204,16 @@ final class AppModel: NSObject, UNUserNotificationCenterDelegate {
     // MARK: - Connection Handling
 
     private func handleConnection(deviceName: String) {
-        saveConnectionRecord(deviceName: deviceName)
         sendConnectionNotification(deviceName: deviceName)
         logStore.log(.connection, Strings.tr("deviceConnected", deviceName))
         locationManager.startUpdating()
+
+        // 嘗試立即建立紀錄；若 GPS 尚未就緒則延後到第一次位置更新
+        if locationManager.currentLocation != nil {
+            saveConnectionRecord(deviceName: deviceName)
+        } else {
+            pendingRecordDeviceName = deviceName
+        }
 
         // 連線時立即傳送一次位置
         if bleManager.isTransmitting, locationManager.currentLocation != nil {
@@ -209,6 +227,7 @@ final class AppModel: NSObject, UNUserNotificationCenterDelegate {
     }
 
     private func handleDisconnection(deviceName: String) {
+        pendingRecordDeviceName = nil
         markDisconnection(deviceName: deviceName)
         sendDisconnectionNotification(deviceName: deviceName)
         logStore.log(.connection, Strings.tr("deviceDisconnected", deviceName))
@@ -222,17 +241,31 @@ final class AppModel: NSObject, UNUserNotificationCenterDelegate {
         guard let context = modelContext,
               let location = locationManager.currentLocation else { return }
 
-        // 查詢同裝置最近的紀錄，若在閾值內則合併（視為同一次連線）
+        // 查詢同裝置最近的紀錄，若仍在連線中或斷線在閾值內則合併
         let threshold = Date().addingTimeInterval(-Self.mergeThreshold)
-        var descriptor = FetchDescriptor<ConnectionRecord>(
-            predicate: #Predicate {
+
+        // 先找仍在連線中的紀錄
+        var activeDesc = FetchDescriptor<ConnectionRecord>(
+            predicate: #Predicate<ConnectionRecord> {
+                $0.deviceName == deviceName && $0.disconnectedAt == nil
+            },
+            sortBy: [SortDescriptor(\.connectedAt, order: .reverse)]
+        )
+        activeDesc.fetchLimit = 1
+
+        // 再找最近斷線的紀錄
+        var recentDesc = FetchDescriptor<ConnectionRecord>(
+            predicate: #Predicate<ConnectionRecord> {
                 $0.deviceName == deviceName && $0.connectedAt > threshold
             },
             sortBy: [SortDescriptor(\.connectedAt, order: .reverse)]
         )
-        descriptor.fetchLimit = 1
+        recentDesc.fetchLimit = 1
 
-        if let recent = try? context.fetch(descriptor).first {
+        let existing = (try? context.fetch(activeDesc).first)
+            ?? (try? context.fetch(recentDesc).first)
+
+        if let recent = existing {
             // 合併：清除斷線時間，更新座標
             recent.disconnectedAt = nil
             recent.latitude = location.coordinate.latitude
