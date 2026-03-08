@@ -201,8 +201,20 @@ struct ContentView: View {
 
                         ForEach(recentRecords) { record in
                             VStack(alignment: .leading, spacing: 4) {
-                                Text(record.deviceName)
-                                    .font(.headline)
+                                HStack {
+                                    Text(record.deviceName)
+                                        .font(.headline)
+                                    Spacer()
+                                    if record.isActive {
+                                        Text(Strings.tr("connected"))
+                                            .font(.caption2)
+                                            .foregroundStyle(.green)
+                                            .padding(.horizontal, 6)
+                                            .padding(.vertical, 2)
+                                            .background(.green.opacity(0.15))
+                                            .clipShape(Capsule())
+                                    }
+                                }
                                 Button {
                                     withAnimation {
                                         mapCameraPosition = .region(MKCoordinateRegion(
@@ -226,6 +238,13 @@ struct ContentView: View {
                                     Image(systemName: "clock")
                                         .foregroundStyle(.secondary)
                                     Text(record.connectedAt, format: .dateTime.month().day().hour().minute())
+                                    if let end = record.disconnectedAt {
+                                        Text("–")
+                                            .foregroundStyle(.secondary)
+                                        Text(end, format: .dateTime.hour().minute())
+                                    }
+                                    Text("(\(Self.formatDuration(record.duration)))")
+                                        .foregroundStyle(.secondary)
                                 }
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
@@ -245,6 +264,16 @@ struct ContentView: View {
                 mapCameraPosition = defaultMapPosition()
             }
         }
+    }
+
+    private static func formatDuration(_ seconds: TimeInterval) -> String {
+        let total = Int(seconds)
+        let h = total / 3600
+        let m = (total % 3600) / 60
+        if h > 0 {
+            return "\(h)\(Strings.tr("hours"))\(m)\(Strings.tr("minutes"))"
+        }
+        return "\(m)\(Strings.tr("minutes"))"
     }
 
     @ViewBuilder

@@ -209,21 +209,59 @@ final class AppModel: NSObject, UNUserNotificationCenterDelegate {
     }
 
     private func handleDisconnection(deviceName: String) {
+        markDisconnection(deviceName: deviceName)
         sendDisconnectionNotification(deviceName: deviceName)
         logStore.log(.connection, Strings.tr("deviceDisconnected", deviceName))
         locationManager.stopUpdating()
     }
 
+    /// 短時間內重複連線的合併閾值（秒）
+    private static let mergeThreshold: TimeInterval = 5 * 60
+
     private func saveConnectionRecord(deviceName: String) {
         guard let context = modelContext,
               let location = locationManager.currentLocation else { return }
 
-        let record = ConnectionRecord(
-            deviceName: deviceName,
-            latitude: location.coordinate.latitude,
-            longitude: location.coordinate.longitude
+        // 查詢同裝置最近的紀錄，若在閾值內則合併（視為同一次連線）
+        let threshold = Date().addingTimeInterval(-Self.mergeThreshold)
+        var descriptor = FetchDescriptor<ConnectionRecord>(
+            predicate: #Predicate {
+                $0.deviceName == deviceName && $0.connectedAt > threshold
+            },
+            sortBy: [SortDescriptor(\.connectedAt, order: .reverse)]
         )
-        context.insert(record)
+        descriptor.fetchLimit = 1
+
+        if let recent = try? context.fetch(descriptor).first {
+            // 合併：清除斷線時間，更新座標
+            recent.disconnectedAt = nil
+            recent.latitude = location.coordinate.latitude
+            recent.longitude = location.coordinate.longitude
+        } else {
+            let record = ConnectionRecord(
+                deviceName: deviceName,
+                latitude: location.coordinate.latitude,
+                longitude: location.coordinate.longitude
+            )
+            context.insert(record)
+        }
         try? context.save()
+    }
+
+    private func markDisconnection(deviceName: String) {
+        guard let context = modelContext else { return }
+
+        var descriptor = FetchDescriptor<ConnectionRecord>(
+            predicate: #Predicate {
+                $0.deviceName == deviceName && $0.disconnectedAt == nil
+            },
+            sortBy: [SortDescriptor(\.connectedAt, order: .reverse)]
+        )
+        descriptor.fetchLimit = 1
+
+        if let record = try? context.fetch(descriptor).first {
+            record.disconnectedAt = Date()
+            try? context.save()
+        }
     }
 }

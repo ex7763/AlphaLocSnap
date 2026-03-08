@@ -96,6 +96,8 @@ struct Strings {
         "updateInterval": "更新間隔",
         "noFilter": "無",
         "seconds": "秒",
+        "minutes": "分鐘",
+        "hours": "小時",
 
         // Stationary Detection
         "stationaryDetection": "靜止偵測省電",
@@ -228,6 +230,8 @@ struct Strings {
         "updateInterval": "Update Interval",
         "noFilter": "None",
         "seconds": "sec",
+        "minutes": "min",
+        "hours": "hr",
 
         // Stationary Detection
         "stationaryDetection": "Stationary Detection",
